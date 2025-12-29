@@ -237,12 +237,10 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 3. Copy the coordinates information (lat, lon)
 
 #### Step 3: Configure the Code
-1. Clone the code from the given link
-```
-	https://github.com/AdhvikaECE536/MAX7219/blob/main/weather_API.ino
-```
-
+1. Clone this repository
+2. Open the `weather_API.ino` file in Arduino IDE
 2. Update these lines with your information:
+   
 ```cpp
 // WiFi Credentials
 const char* ssid = "YOUR_WIFI_NAME";
