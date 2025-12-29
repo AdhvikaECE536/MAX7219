@@ -39,7 +39,7 @@ GPIO18   →     CLK (clock signal)
 GPIO05   →     CS  (chip select)
 ```
 
-### 📦 Setup
+### 📦 Software Installations and Setup
 
 1. **Install Arduino IDE**
    - Download from [arduino.cc](https://www.arduino.cc/en/software)
@@ -157,5 +157,288 @@ display.displayText(
 
 ---
 
+## PART 02: Weather API on `MAX7219`
 
-# weather_API.ino
+### ✨ Features
+
+- 🌡️ **Real-Time Weather Data** - Fetches live temperature, humidity, pressure, and weather conditions
+- 📡 **WiFi Connectivity** - Connects to your home WiFi network
+- 🖥️ **LED Matrix Display** - Shows weather information on 32x8 pixel scrolling display
+- 🔄 **Auto-Rotation** - Cycles through different weather parameters automatically
+- 💡 **Smooth Animations** - Scrolling text effects for easy reading
+- ⚡ **Low Power** - Efficient ESP32 implementation with adjustable brightness
+
+### 🛠️ Hardware Requirements
+
+| Component                 | Specification             | Quantity |
+| ------------------------- | ------------------------- | -------- |
+| ESP32 Development Board   | ESP32-WROOM-32 or similar | 1        |
+| MAX7219 LED Matrix Module | FC16 type (32x8 pixels)   | 1        |
+| USB Cable                 | Micro USB or USB-C        | 1        |
+| Breadboard (Optional)     | Standard size             | 1        |
+| Jumper Wires              | Male-to-Female            | 5        |
+
+### 🔌 Connections
+
+The MAX7219 LED Matrix Module is connected to ESP32 through suggested conections:
+
+```
+ESP32          MAX7219 LED
+─────────────────────────────────
+5V(Vin)  →     VCC (power supply)
+GND      →     GND (ground)
+GPIO23   →     DIN (data input)
+GPIO18   →     CLK (clock signal)
+GPIO05   →     CS  (chip select)
+```
+
+### 📦 Software Installations
+
+1. **Install Arduino IDE**
+   - Download from [arduino.cc](https://www.arduino.cc/en/software)
+   - Install version 2.0 or higher
+
+2. **Add ESP32 Board Support**
+   - Open Arduino IDE
+   - Go to `File` → `Preferences`
+   - Add this URL to "Additional Board Manager URLs":
+```
+https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+```
+   - Go to `Tools` → `Board` → `Boards Manager`
+   - Search for "ESP32" and install "esp32 by Espressif Systems"
+
+3. **Install Required Libraries**
+   
+   Go to `Sketch` → `Include Library` → `Manage Libraries` and install:
+   
+- **MD_Parola** (by MajicDesigns)
+	- Provides text effects and animations
+- **MD_MAX72XX** (by MajicDesigns)
+	-  Controls MAX7219 LED matrix driver IC
+- **SPI** (Built-in)
+	- Enables hardware SPI communication
+- **WiFi** (Pre-installed with ESP32)
+- **HTTPClient** (usually pre-installed with ESP32)
+- **ArduinoJson** (by Benoit Blanchon) 
+	- for parsing weather data
+
+### 🚀 Setup Steps
+
+#### Step 1: Get OpenWeatherMap API Key
+1. Go to [OpenWeatherMap](https://openweathermap.org/api)
+2. Sign up for a free account
+3. Navigate to API Keys section in 
+4. Copy your API key (looks like: `a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6`)
+
+#### Step 2: Get location coordinates
+1. Go to [Google Maps](https://www.google.com/maps)
+2. Right-click on any location of choice
+3. Copy the coordinates information (lat, lon)
+
+#### Step 3: Configure the Code
+1. Clone the code from the given link
+```
+	https://github.com/AdhvikaECE536/MAX7219/blob/main/weather_API.ino
+```
+
+2. Update these lines with your information:
+```cpp
+// WiFi Credentials
+const char* ssid = "YOUR_WIFI_NAME";
+const char* password = "YOUR_WIFI_PASSWORD";
+
+// OpenWeatherMap API
+String apiKey = "YOUR_API_KEY_HERE";
+
+// Coordinates 
+String lat = "<your lat>";
+String lon = "<your lon>";
+```
+
+#### Step 4: Upload to ESP32
+1. Connect ESP32 to your computer via USB
+2. Select board: `Tools` → `Board` → `ESP32 Dev Module`
+3. Select correct COM port: `Tools` → `Port` → `COMx` (Windows) or `/dev/ttyUSB0` (Linux/Mac)
+4. Click the **Verify** button (✓) 
+5. Click the **Upload** button (→)
+6. Wait for "Done uploading" message
+
+#### Step 5: Monitor Serial Output
+1. Open Serial Monitor: `Tools` → `Serial Monitor`
+2. Set baud rate to `115200` and `new line`
+3. You should see connection status and weather data!
+
+### 📊 Display Information
+
+The LED matrix cycles through these views automatically:
+
+1. **Weather Condition** - Description (e.g., "clear sky", "light rain")
+2. **Temperature & Feels Like** - Current temp and apparent temperature (°C)
+3. **Humidity & Pressure** - Humidity (%) and atmospheric pressure (hPa)
+4. **Wind Speed** - Wind speed in m/s
+
+Each view scrolls across the display and automatically switches to the next after a delay.
+
+### 📖 How It Works
+
+- **WiFi Connection**: ESP32 connects to your WiFi network (displays "CONNECTING WIFI" message)
+- **Connection Confirmation**: Once connected, displays "WIFI CONNECTED"
+- **API Request**: Sends HTTP GET request to OpenWeatherMap API with your coordinates
+- **JSON Parsing**: Receives and parses JSON response containing weather data
+- **Data Extraction**: Extracts weather parameters (condition, temp, humidity, pressure, wind)
+- **Display Rotation**: Cycles through 4 different weather views with scrolling animation
+- **Loop**: Updates weather data every 30 seconds and continues cycling
+
+### Display Flow
+
+```
+Stage 0: COND: [weather description]
+   ↓
+Stage 1: TEMP: [temperature]C  FL: [feels like]C
+   ↓
+Stage 2: HUM: [humidity]%  PRES: [pressure]hPa
+   ↓
+Stage 3: WIND: [wind speed] m/s
+   ↓
+(Repeat from Stage 0)
+```
+
+### 🎨 Customization
+##### Change Display Brightness
+
+```cpp
+display.setIntensity(5);  // Range: 0 (dimmest) - 15 (brightest)
+```
+
+##### Change Scroll Speed
+
+```cpp
+display.displayText(
+  msg.c_str(),
+  PA_LEFT,
+  40,        // ← Speed (lower = faster, higher = slower)
+  2500,      // ← Pause duration in milliseconds
+  PA_SCROLL_LEFT,
+  PA_SCROLL_LEFT
+);
+```
+
+##### Change Update Interval
+
+```cpp
+delay(1000);  // Update every 30 seconds (30000 ms)
+              // Change to 60000 for 1 minute, 600000 for 10 minutes
+```
+
+##### Change Temperature Unit
+
+```cpp
+// In the API URL, change the units parameter:
+"&units=metric"    // For Celsius (default)
+// OR
+"&units=imperial"  // For Fahrenheit
+```
+
+
+### 🐛 Troubleshooting
+
+##### 1. Display Not Working
+
+**Check Power Supply**
+- Ensure 5V and GND are properly connected
+- Multiple modules may require external 5V power supply (each module draws ~320mA)
+
+**Verify Pin Connections**
+- Confirm DIN (GPIO23), CLK (GPIO18), and CS (GPIO5) pins match the code
+- Most common issue: incorrect CS pin
+
+**Hardware Type Mismatch**
+- Ensure `HARDWARE_TYPE` matches your module:
+```cpp
+#define HARDWARE_TYPE MD_MAX72XX::FC16_HW  // For FC16 modules
+```
+
+- Other options: `PAROLA_HW`, `GENERIC_HW`, `ICSTATION_HW`
+
+##### 2. WiFi Connection Failed
+- Double-check SSID and password (case-sensitive!)
+- Make sure WiFi is 2.4GHz (ESP32 doesn't support 5GHz)
+- Check if WiFi has special characters in password
+- Try moving ESP32 closer to router
+- Watch LED matrix for "CONNECTING WIFI" message
+
+##### 3. API Not Responding
+- Verify API key is correct (no extra spaces)
+- Check latitude and longitude values
+- Ensure you have internet connection
+- Wait a few minutes (new API keys can take time to activate)
+- Check API usage limits (free tier: 60 calls/minute, 1,000,000 calls/month)
+- Watch Serial Monitor for JSON response
+
+##### 4. Display Shows "ERROR FETCHING DATA"
+- Check Serial Monitor for HTTP error codes
+- Verify WiFi connection is stable
+- Confirm API URL is correct
+- Check if OpenWeatherMap service is online
+
+##### 5. Garbled or Missing Text
+- Reduce number of devices to test
+- Check data line integrity (use shorter wires)
+- Verify power supply is stable and sufficient
+- Lower the brightness if power supply is weak
+
+##### 6. Code Won't Upload
+- Hold `BOOT` button on ESP32 while uploading
+- Check USB cable (some cables are power-only)
+- Select correct COM port
+- Try a different USB port
+- Install CH340/CP2102 drivers if needed
+
+### 🎓 Learning Outcomes
+- **WiFi Connectivity** - Connecting ESP32 to wireless networks
+- **HTTP API Requests** - Making GET requests to web services
+- **JSON Data Parsing** - Extracting data from API responses
+- **SPI Communication** - Hardware-level communication with LED displays
+- **LED Matrix Control** - Working with MAX7219 driver IC
+- **Text Animation** - Implementing scrolling effects and display cycling
+- **Arduino Libraries** - Using third-party libraries effectively
+- **ESP32 Programming** - GPIO configuration and pin mapping
+- **State Management** - Cycling through different display modes
+- **Debugging Skills** - Troubleshooting WiFi, API, and hardware issues
+- **IoT Development** - Building internet-connected embedded systems
+
+### 🚀 Future Enhancements
+- **Real-Time Clock Display** - Show current time using NTP server
+- **Multiple Locations** - Switch between different cities via Serial input
+- **Weather Alerts** - Display warnings for severe weather conditions
+- **Weather Forecast** - Show 5-day forecast data
+- **Local Sensors** - Integrate DHT22 for indoor vs outdoor comparison
+- **Custom Icons** - Add weather-specific pixel art animations
+- **Adaptive Brightness** - Adjust LED intensity based on time of day
+- **Mobile Control** - Web interface for location and display settings
+- **Data Logging** - Store historical weather data on SD card
+- **Voice Announcements** - Add MP3 module for weather audio updates
+- **Alarm Integration** - Wake-up display with weather briefing
+- **Home Assistant** - MQTT integration for smart home systems
+
+---
+
+## 📄 License
+
+This project is open source and available for educational purposes. 
+
+---
+
+## 👤 Author
+
+[@AdhvikaECE536](https://github.com/AdhvikaECE536)
+
+---
+
+**Note**: This is a learning project. It uses open-source libraries and public APIs. Feel free to experiment and modify the code!
+
+
+---
+
+Made with ❤️ using ESP32
