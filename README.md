@@ -422,6 +422,14 @@ delay(1000);  // Update every 30 seconds (30000 ms)
 
 ---
 
+## Photos
+
+<img width="497" height="685" alt="image" src="https://github.com/user-attachments/assets/006bca24-54cc-48fb-b891-12ae3655a069" />
+
+<img width="490" height="775" alt="image" src="https://github.com/user-attachments/assets/fea876e3-6e87-4647-a36a-14227948ce1b" />
+
+---
+
 ## 📄 License
 
 This project is open source and available for educational purposes. 
